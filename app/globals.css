@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Times New Roman', serif;
+}
+
+/* RETRO BUTTON STYLE */
+.classic-btn {
+  background: #c0c0c0;
+  border: 2px solid white;
+  border-right-color: #808080;
+  border-bottom-color: #808080;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: Tahoma, sans-serif;
+  color: black;
+  transition: all 0.1s;
+}
+
+.classic-btn:active {
+  border: 2px solid #808080;
+  border-right-color: white;
+  border-bottom-color: white;
+}
+
+/* RETRO LINK STYLE */
+.classic-link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.classic-link:hover {
+  color: red;
+}
+
+/* COMIC SANS TITLE FOR AMATEUR LOOK */
+.comic-title {
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+}
+
+/* MARQUEE ANIMATION */
+.marquee-box {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-text {
+  display: inline-block;
+  animation: marquee 15s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* HACKER TERMINAL SCROLLBAR */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #000;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #013220;
+}
