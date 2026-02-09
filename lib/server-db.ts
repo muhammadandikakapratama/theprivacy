@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+// In-memory database for Vercel (serverless compatible)
+let db: any = null
 
 // Types
 export type User = {
@@ -24,7 +24,7 @@ export type Challenge = {
     flag: string
 }
 
-// Initial Data Utility
+// Initial Data
 const INITIAL_DATA = {
     users: [],
     challenges: [
@@ -67,40 +67,31 @@ const INITIAL_DATA = {
     ]
 }
 
-// Data Handlers (ASYNC)
+// Database handlers
 export const getDb = async () => {
-    const DB_FILE = path.join(process.cwd(), 'data', 'database.json')
-
-    if (!fs.existsSync(DB_FILE)) {
-        const dataDir = path.join(process.cwd(), 'data')
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
-        fs.writeFileSync(DB_FILE, JSON.stringify(INITIAL_DATA, null, 2))
-        return INITIAL_DATA
+    if (!db) {
+        db = JSON.parse(JSON.stringify(INITIAL_DATA))
     }
-
-    const data = fs.readFileSync(DB_FILE, 'utf-8')
-    return JSON.parse(data)
+    return db
 }
 
 export const saveDb = async (data: any) => {
-    const DB_FILE = path.join(process.cwd(), 'data', 'database.json')
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2))
+    db = data
 }
 
 export const getUserByUsername = async (username: string): Promise<User | undefined> => {
-    const db = await getDb()
-    return db.users.find((u: any) => u.username === username)
+    const database = await getDb()
+    return database.users.find((u: any) => u.username === username)
 }
 
 export const getAllUsers = async (): Promise<User[]> => {
-    const db = await getDb()
-    return db.users
+    const database = await getDb()
+    return database.users
 }
 
 export const registerUser = async (username: string, passwordHash: string) => {
-    const db = await getDb()
-    // Manual check to avoid race conditions if many register at once
-    if (db.users.find((u: any) => u.username === username)) return null
+    const database = await getDb()
+    if (database.users.find((u: any) => u.username === username)) return null
 
     const newUser: User = {
         username,
@@ -113,57 +104,57 @@ export const registerUser = async (username: string, passwordHash: string) => {
         city: 'Detecting...',
         ipAddress: '0.0.0.0'
     }
-    db.users.push(newUser)
-    await saveDb(db)
+    database.users.push(newUser)
+    await saveDb(database)
     return newUser
 }
 
 export const toggleUserBan = async (username: string) => {
-    const db = await getDb()
-    const userIndex = db.users.findIndex((u: any) => u.username === username)
+    const database = await getDb()
+    const userIndex = database.users.findIndex((u: any) => u.username === username)
     if (userIndex === -1) return false
 
-    db.users[userIndex].isBanned = !db.users[userIndex].isBanned
-    await saveDb(db)
-    return db.users[userIndex].isBanned
+    database.users[userIndex].isBanned = !database.users[userIndex].isBanned
+    await saveDb(database)
+    return database.users[userIndex].isBanned
 }
 
 export const updateLastSeen = async (username: string) => {
-    const db = await getDb()
-    const userIndex = db.users.findIndex((u: any) => u.username === username)
+    const database = await getDb()
+    const userIndex = database.users.findIndex((u: any) => u.username === username)
     if (userIndex === -1) return false
 
-    db.users[userIndex].lastSeen = Date.now()
-    await saveDb(db)
+    database.users[userIndex].lastSeen = Date.now()
+    await saveDb(database)
     return true
 }
 
 export const updateUserNetwork = async (username: string, data: { ip: string, city: string, country: string, countryCode: string }) => {
-    const db = await getDb()
-    const userIndex = db.users.findIndex((u: any) => u.username === username)
+    const database = await getDb()
+    const userIndex = database.users.findIndex((u: any) => u.username === username)
     if (userIndex === -1) return false
 
-    db.users[userIndex].ipAddress = data.ip
-    db.users[userIndex].city = data.city
-    db.users[userIndex].country = data.country
-    db.users[userIndex].countryCode = data.countryCode
-    await saveDb(db)
+    database.users[userIndex].ipAddress = data.ip
+    database.users[userIndex].city = data.city
+    database.users[userIndex].country = data.country
+    database.users[userIndex].countryCode = data.countryCode
+    await saveDb(database)
     return true
 }
 
 export const updateUserProgress = async (username: string, levelId: number) => {
-    const db = await getDb()
-    const userIndex = db.users.findIndex((u: any) => u.username === username)
+    const database = await getDb()
+    const userIndex = database.users.findIndex((u: any) => u.username === username)
     if (userIndex === -1) return false
 
-    if (!db.users[userIndex].solvedLevels.includes(levelId)) {
-        db.users[userIndex].solvedLevels.push(levelId)
-        await saveDb(db)
+    if (!database.users[userIndex].solvedLevels.includes(levelId)) {
+        database.users[userIndex].solvedLevels.push(levelId)
+        await saveDb(database)
     }
     return true
 }
 
 export const getChallenge = async (id: number) => {
-    const db = await getDb()
-    return db.challenges.find((c: any) => c.id === id)
+    const database = await getDb()
+    return database.challenges.find((c: any) => c.id === id)
 }
