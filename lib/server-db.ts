@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { getStore } from '@netlify/blobs'
 
 // Types
 export type User = {
@@ -70,46 +69,20 @@ const INITIAL_DATA = {
 
 // Data Handlers (ASYNC)
 export const getDb = async () => {
-    // Use Netlify Blobs only if on Netlify
-    if (process.env.NETLIFY) {
-        try {
-            const store = getStore('ep-database')
-            let data = await store.get('db', { type: 'json' })
-            if (!data) {
-                await store.setJSON('db', INITIAL_DATA)
-                return INITIAL_DATA
-            }
-            return data
-        } catch (error) {
-            console.error('Netlify Blobs error, falling back to local storage:', error)
-            // Fall through to local file system if Blobs fail
-        }
-    }
-
-    // Local Development (File System)
     const DB_FILE = path.join(process.cwd(), 'data', 'database.json')
+
     if (!fs.existsSync(DB_FILE)) {
         const dataDir = path.join(process.cwd(), 'data')
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir)
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
         fs.writeFileSync(DB_FILE, JSON.stringify(INITIAL_DATA, null, 2))
         return INITIAL_DATA
     }
+
     const data = fs.readFileSync(DB_FILE, 'utf-8')
     return JSON.parse(data)
 }
 
 export const saveDb = async (data: any) => {
-    if (process.env.NETLIFY) {
-        try {
-            const store = getStore('ep-database')
-            await store.setJSON('db', data)
-            return
-        } catch (error) {
-            console.error('Netlify Blobs save error, falling back to local storage:', error)
-            // Fall through to local file system if Blobs fail
-        }
-    }
-
     const DB_FILE = path.join(process.cwd(), 'data', 'database.json')
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2))
 }
