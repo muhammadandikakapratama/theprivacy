@@ -16,15 +16,28 @@ const LEVELS = [
 ]
 
 export default function DashboardPage() {
-    const [onlineUsers, setOnlineUsers] = useState(12)
+    const [onlineUsers, setOnlineUsers] = useState(0)
     const [user, setUser] = useState<{ username: string, solvedLevels: number[] } | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setOnlineUsers(prev => prev + (Math.random() > 0.5 ? 1 : -1))
-        }, 5000)
+        // Fetch real online users count
+        const fetchOnlineCount = async () => {
+            try {
+                const res = await fetch('/api/stats/online')
+                if (res.ok) {
+                    const data = await res.json()
+                    setOnlineUsers(data.online || 0)
+                }
+            } catch (err) {
+                console.error('Failed to fetch online count')
+            }
+        }
+
+        // Update every 10 seconds
+        fetchOnlineCount()
+        const interval = setInterval(fetchOnlineCount, 10000)
 
         // Fetch user progress and detect real IP
         const fetchUser = async () => {
